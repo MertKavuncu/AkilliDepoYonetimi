@@ -141,9 +141,18 @@ namespace AkilliDepoYonetimi
                                             double bakiye = OndalikAl("Başlangıç bakiyenizi giriniz: ");
                                             genelKullaniciId++;
 
-                                            musteriListesi.Add(new Musteri(genelKullaniciId, isim, bakiye));
-                                            File.WriteAllText("musteriler.json", JsonSerializer.Serialize(musteriListesi, new JsonSerializerOptions { WriteIndented = true }));
-                                            Console.WriteLine($"\nKayıt başarılı! Müşteri ID'niz: {genelKullaniciId}. Lütfen giriş yaparken bu ID'yi kullanmayı unutmayın.\n");
+                                            try
+                                            {
+                                                musteriListesi.Add(new Musteri(genelKullaniciId, isim, bakiye));
+                                                File.WriteAllText("musteriler.json", JsonSerializer.Serialize(musteriListesi, new JsonSerializerOptions { WriteIndented = true }));
+                                                Console.WriteLine($"\nKayıt başarılı! Müşteri ID'niz: {genelKullaniciId}. Lütfen giriş yaparken bu ID'yi kullanmayı unutmayın.\n");
+                                            }
+                                            catch (Exception ex)
+                                            {
+                                                Console.WriteLine($"\nMüşteri Kaydı Başarısız: {ex.Message}");
+                                                genelKullaniciId--;
+                                            }
+
                                             kayitDevam = false;
                                             Console.WriteLine("\nAna menüye dönmek için bir tuşa basın...");
                                             Console.ReadKey(true);
@@ -179,10 +188,10 @@ namespace AkilliDepoYonetimi
             while (true)
             {
                 Console.Write(mesaj);
-                if (int.TryParse(Console.ReadLine(), out sayi))
+                if (int.TryParse(Console.ReadLine(), out sayi) && sayi >= 0)
                     return sayi;
 
-                Console.WriteLine("Hatalı giriş! Lütfen geçerli bir tam sayı giriniz.");
+                Console.WriteLine("Hatalı giriş! Lütfen 0 veya daha büyük geçerli bir sayı giriniz.");
             }
         }
 
@@ -192,10 +201,10 @@ namespace AkilliDepoYonetimi
             while (true)
             {
                 Console.Write(mesaj);
-                if (double.TryParse(Console.ReadLine(), out sayi))
+                if (double.TryParse(Console.ReadLine(), out sayi) && sayi >= 0)
                     return sayi;
 
-                Console.WriteLine("Hatalı giriş! Lütfen geçerli bir sayı giriniz.");
+                Console.WriteLine("Hatalı giriş! Lütfen 0 veya daha büyük geçerli bir sayı giriniz.");
             }
         }
 
@@ -270,24 +279,31 @@ namespace AkilliDepoYonetimi
 
                                 Console.WriteLine("Geçersiz tür seçimi! Lütfen 1, 2 veya 3 giriniz.");
                             }
-                            Urunler eklenecekUrun = null;
-
-                            switch (turSecim)
+                            try
                             {
-                                case 1:
-                                    eklenecekUrun = new Urunler(yeniUrunId, yeniUrunIsim, yeniUrunFiyat, yeniUrunAdet);
-                                    break;
-                                case 2:
-                                    double yeniUrunSogutmaMasraf = OndalikAl("Soğuk zincir ürünlerinde ekstra soğutma masrafı bulunur. Ekstra masraf tutarını giriniz: ");
-                                    eklenecekUrun = new SogukZincirUrunleri(yeniUrunId, yeniUrunIsim, yeniUrunFiyat, yeniUrunAdet, yeniUrunSogutmaMasraf);
-                                    break;
-                                case 3:
-                                    double yeniUrunKargoMasraf = OndalikAl("Hassas kargo ürünlerinde ekstra taşıma masrafı bulunur. Ekstra masraf tutarını giriniz: ");
-                                    eklenecekUrun = new HassasKargoUrunleri(yeniUrunId, yeniUrunIsim, yeniUrunFiyat, yeniUrunAdet, yeniUrunKargoMasraf);
-                                    break;
-                            }
+                                Urunler eklenecekUrun = null;
 
-                            depo.YeniUrunEkle(eklenecekUrun);
+                                switch (turSecim)
+                                {
+                                    case 1:
+                                        eklenecekUrun = new Urunler(yeniUrunId, yeniUrunIsim, yeniUrunFiyat, yeniUrunAdet);
+                                        break;
+                                    case 2:
+                                        double yeniUrunSogutmaMasraf = OndalikAl("Soğuk zincir ürünlerinde ekstra soğutma masrafı bulunur. Ekstra masraf tutarını giriniz: ");
+                                        eklenecekUrun = new SogukZincirUrunleri(yeniUrunId, yeniUrunIsim, yeniUrunFiyat, yeniUrunAdet, yeniUrunSogutmaMasraf);
+                                        break;
+                                    case 3:
+                                        double yeniUrunKargoMasraf = OndalikAl("Hassas kargo ürünlerinde ekstra taşıma masrafı bulunur. Ekstra masraf tutarını giriniz: ");
+                                        eklenecekUrun = new HassasKargoUrunleri(yeniUrunId, yeniUrunIsim, yeniUrunFiyat, yeniUrunAdet, yeniUrunKargoMasraf);
+                                        break;
+                                }
+
+                                depo.YeniUrunEkle(eklenecekUrun);
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine($"\nÜrün Eklenemedi: {ex.Message}");
+                            }
                             Console.WriteLine("\nDevam etmek için bir tuşa basın...");
                             Console.ReadKey(true);
                             break;
